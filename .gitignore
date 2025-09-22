@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python/
+build/
+develop-eggs/
+dist/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+.project
+.pytest_cache/
+.venv/
+venv/
+env/
+.env/
+*.env
+instance/
+.vscode/
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+/data/*.db
+/data/*.sqlite
+/data/*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Arquivos de dados gerados (se houver)
+*.csv
+*.xlsx
+*.docx
+*.pdf
+
+# Configurações locais e sensíveis
+*.ini
+*.conf
+*.cfg
+*.json  # Se tiver algum JSON com credenciais ou dados sensíveis, adicione aqui.
