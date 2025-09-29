@@ -12,17 +12,6 @@ class FVBase(BaseModel):
     IDCATEGORIA: Optional[int] = None
     ATIVO: Optional[bool] = None
 
-class FVCreate(FVBase):
-    ID: int                       # PK composta, obrigatória
-    RECCREATEDBY: Optional[str] = None
-
-class FVUpdate(BaseModel):
-    NOME: Optional[str] = None
-    DESCRICAO: Optional[str] = None
-    IDCATEGORIA: Optional[int] = None
-    ATIVO: Optional[bool] = None
-    RECMODIFIEDBY: Optional[str] = None
-
 class FVRead(FVBase):
     ID: int
     RECCREATEDBY: Optional[str]
@@ -44,15 +33,6 @@ class SQLBase(BaseModel):
     SENTENCA: Optional[str] = None
     TAMANHO: Optional[int] = None
 
-class SQLCreate(SQLBase):
-    RECCREATEDBY: Optional[str] = None
-
-class SQLUpdate(BaseModel):
-    TITULO: Optional[str] = None
-    SENTENCA: Optional[str] = None
-    TAMANHO: Optional[int] = None
-    RECMODIFIEDBY: Optional[str] = None
-
 class SQLRead(SQLBase):
     RECCREATEDBY: Optional[str]
     RECCREATEDON: Optional[datetime]
@@ -70,15 +50,6 @@ class ReportBase(BaseModel):
     CODAPLICACAO: str
     CODIGO: Optional[str] = None
     DESCRICAO: Optional[str] = None
-
-class ReportCreate(ReportBase):
-    ID: int                       # PK composta, obrigatória
-    RECCREATEDBY: Optional[str] = None
-
-class ReportUpdate(BaseModel):
-    CODIGO: Optional[str] = None
-    DESCRICAO: Optional[str] = None
-    USRULTALTERACAO: Optional[str] = None
 
 class ReportRead(ReportBase):
     ID: int
@@ -117,6 +88,9 @@ class DependenciaRead(DependenciaBase):
         orm_mode = True
 
 
+# -----------------------------
+# Schema para AUD_ALTERACAO (leitura)
+# -----------------------------
 
 class AudAlteracaoRead(BaseModel):
     ID_AUD: int
@@ -131,3 +105,29 @@ class AudAlteracaoRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+# -----------------------------
+# Schemas para AUD_DOCS
+# -----------------------------
+class DocBase(BaseModel):
+    CHAVE: str
+    TITULO: str
+    AUTOR: str
+    CONTEUDO: str  # Markdown
+    TAGS: Optional[str] = None
+
+class DocCreate(DocBase):
+    pass
+
+class DocUpdate(BaseModel):
+    TITULO: Optional[str] = None
+    CONTEUDO: Optional[str] = None
+    TAGS: Optional[str] = None
+
+class DocRead(DocBase):
+    ID_DOC: int
+    DATA_CRIACAO: datetime
+    DATA_ATUALIZACAO: datetime
+
+    class Config:
+        orm_mode = True

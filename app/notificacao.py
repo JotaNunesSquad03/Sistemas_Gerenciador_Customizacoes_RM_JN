@@ -15,7 +15,7 @@ def notificar_console(change):
     tipo_obj = nomes_tabela.get(change.TABELA, change.TABELA)
 
     print("\n" + "="*70)
-    print(f"NOTIFICAÇÃO (SIMULAÇÃO) — {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    print(f"NOTIFICAÇÃO — {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
     print("="*70)
     print(f"Objeto: {tipo_obj}")
     print(f"Chave: {change.CHAVE}")

@@ -150,3 +150,12 @@ def get_dependencias_destino(
         models.AUD_DEPENDENCIAS.TIPO_DESTINO == tipo,
         models.AUD_DEPENDENCIAS.ID_DESTINO == id_item
     ).all()
+
+# SCANNER AUTOMÁTICO
+from app.services.dependencias_scanner import popular_dependencias
+
+@router.post("/scan")
+def scan_dependencias(db: Session = Depends(get_db)):
+    """Executa scanner automático para detectar dependências (FV, SQL, REPORT)"""
+    novas = popular_dependencias(db)
+    return {"message": f"Scanner executado. Dependências novas detectadas: {novas}"}

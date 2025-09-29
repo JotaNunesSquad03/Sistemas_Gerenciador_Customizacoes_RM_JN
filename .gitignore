@@ -61,3 +61,11 @@ logs/
 *.conf
 *.cfg
 *.json  # Se tiver algum JSON com credenciais ou dados sensíveis, adicione aqui.
+
+
+# Arquivos de teste
+test_audit.py
+test_docs.py
+test_ws.py
+teste_aud_fv.py
+teste_schemas.py

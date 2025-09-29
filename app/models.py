@@ -79,8 +79,19 @@ class AUD_ALTERACAO(Base):
     VALOR_NOVO = Column(Text, nullable=True)
 
 
-class AUD_CURSOR(Base):
-    __tablename__ = "AUD_CURSOR"
+class AUD_DOCS(Base):
+    __tablename__ = "AUD_DOCS"
 
-    ID = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    LAST_CHECK = Column(DateTime, nullable=False)
+    ID_DOC = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    CHAVE = Column(String(150), nullable=False, index=True)  # ex.: "SQL|0|CODEF001.0005"
+    TITULO = Column(String(200), nullable=False)             # ex.: "Especificação da Consulta CODEF001.0005"
+    AUTOR = Column(String(100), nullable=False)              # usuário que documentou
+    CONTEUDO = Column(Text, nullable=False)                  # Markdown
+    TAGS = Column(String(300), nullable=True)                # ex.: "fiscal, compras"
+    DATA_CRIACAO = Column(DateTime, default=datetime.utcnow, nullable=False)
+    DATA_ATUALIZACAO = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    # Permite várias páginas por CHAVE, mas sem títulos duplicados
+    __table_args__ = (
+        {'schema': 'dbo'} 
+    )
