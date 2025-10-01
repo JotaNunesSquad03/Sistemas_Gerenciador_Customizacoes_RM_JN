@@ -91,7 +91,31 @@ class AUD_DOCS(Base):
     DATA_CRIACAO = Column(DateTime, default=datetime.utcnow, nullable=False)
     DATA_ATUALIZACAO = Column(DateTime, default=datetime.utcnow, nullable=False)
 
-    # Permite várias páginas por CHAVE, mas sem títulos duplicados
     __table_args__ = (
         {'schema': 'dbo'} 
     )
+
+class Usuario(Base):
+    __tablename__ = "USUARIOS"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    nome = Column(String(100), nullable=False)
+    email = Column(String(100), unique=True, nullable=False)
+    senha_hash = Column(String(255), nullable=False)
+    funcao = Column(String(50), nullable=False)  # <-- aqui
+    data_criacao = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class Notificacao(Base):
+    __tablename__ = "NOTIFICACOES"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id_usuario = Column(Integer, nullable=False)          
+    id_alteracao = Column(Integer, nullable=True)         
+    tabela = Column(String(50), nullable=False)          
+    chave = Column(String(200), nullable=True)           
+    acao = Column(String(20), nullable=False)            
+    mensagem = Column(String(500), nullable=True)        
+    data_hora = Column(DateTime, default=datetime.utcnow, nullable=False)
+    lida = Column(Boolean, default=False)             
+

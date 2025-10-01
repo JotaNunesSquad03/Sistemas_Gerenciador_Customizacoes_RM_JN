@@ -3,20 +3,18 @@ import json
 import asyncio
 from datetime import datetime
 from app.database import SessionLocal
-from app.models import AUD_ALTERACAO, AUD_DEPENDENCIAS  
+from app.models import AUD_ALTERACAO, AUD_DEPENDENCIAS, Notificacao
 from app.services.websocket_manager import manager, loop  # loop global thread-safe
 
-WS_AVAILABLE = True
-
+WS_AVAILABLE = True  # ativa envio via WebSocket
 
 def _get_last_seen_id(db):
     """Busca o maior ID_AUD existente para começar a ler a partir dele."""
     last = db.query(AUD_ALTERACAO).order_by(AUD_ALTERACAO.ID_AUD.desc()).first()
     return last.ID_AUD if last else 0
 
-
-def _get_dependencias(db, tabela, id_item, codcoligada):
-    """Retorna dependências relacionadas ao item alterado."""
+def _get_usuarios_dependentes(db, tabela, id_item, codcoligada):
+    """Retorna lista de usuários que devem receber notificações pela dependência."""
     depende_de_item = db.query(AUD_DEPENDENCIAS).filter(
         AUD_DEPENDENCIAS.CODCOLIGADA == codcoligada,
         AUD_DEPENDENCIAS.TIPO_ORIGEM == tabela,
@@ -29,36 +27,30 @@ def _get_dependencias(db, tabela, id_item, codcoligada):
         AUD_DEPENDENCIAS.ID_DESTINO == id_item
     ).all()
 
-    return {
-        "depende_de_item": [
-            {"tipo_destino": d.TIPO_DESTINO, "id_destino": d.ID_DESTINO} for d in depende_de_item
-        ],
-        "item_depende": [
-            {"tipo_origem": d.TIPO_ORIGEM, "id_origem": d.ID_ORIGEM} for d in item_depende
-        ]
-    }
+    usuarios = set()
+    for dep in depende_de_item + item_depende:
+        if hasattr(dep, "USUARIO") and dep.USUARIO:
+            usuarios.add(dep.USUARIO)
+    return list(usuarios)
 
-
-def _to_payload(record, db):
-    """Monta JSON leve para enviar aos clientes WebSocket, incluindo dependências."""
-    dependencias = _get_dependencias(db, record.TABELA, record.CHAVE, getattr(record, "CODCOLIGADA", 0))
+def _to_payload(notificacao):
+    """Transforma a notificação em JSON para WebSocket."""
     return json.dumps(
         {
-            "id": record.ID_AUD,
-            "tabela": record.TABELA,
-            "chave": getattr(record, "CHAVE", None),
-            "acao": record.ACAO,
-            "usuario": record.USUARIO,
-            "data_hora": record.DATA_HORA.isoformat() if isinstance(record.DATA_HORA, datetime) else str(record.DATA_HORA),
-            "descricao": record.DESCRICAO,
-            "dependencias": dependencias 
+            "id": notificacao.id,
+            "usuario": notificacao.usuario,
+            "tabela": notificacao.tabela,
+            "chave": notificacao.chave,
+            "acao": notificacao.acao,
+            "descricao": notificacao.descricao,
+            "data_hora": notificacao.data_hora.isoformat(),
+            "lida": notificacao.lida
         },
-        ensure_ascii=False,
+        ensure_ascii=False
     )
 
-
 def notification_loop(interval_seconds=5):
-    """Loop que verifica a tabela AUD_ALTERACAO por novos registros e envia notificações via WebSocket."""
+    """Loop que verifica AUD_ALTERACAO e cria notificações."""
     db = SessionLocal()
     try:
         last_seen_id = _get_last_seen_id(db)
@@ -76,25 +68,38 @@ def notification_loop(interval_seconds=5):
             )
 
             for registro in novos:
-                if WS_AVAILABLE:
-                    db_ws = SessionLocal()
-                    try:
-                        payload = _to_payload(registro, db_ws)
-                        asyncio.run_coroutine_threadsafe(manager.broadcast(payload), loop)
-                    finally:
-                        db_ws.close()
+                # busca usuários que devem receber a notificação
+                usuarios = _get_usuarios_dependentes(
+                    db, registro.TABELA, getattr(registro, "CHAVE", None), getattr(registro, "CODCOLIGADA", 0)
+                )
+
+                for usuario in usuarios:
+                    # cria registro de notificação
+                    notificacao = Notificacao(
+                        usuario=usuario,
+                        tabela=registro.TABELA,
+                        chave=getattr(registro, "CHAVE", None),
+                        acao=registro.ACAO,
+                        descricao=registro.DESCRICAO,
+                        data_hora=registro.DATA_HORA or datetime.utcnow()
+                    )
+                    db.add(notificacao)
+                    db.commit()
+                    db.refresh(notificacao)
+
+                    # envia via WebSocket se estiver disponível
+                    if WS_AVAILABLE:
+                        asyncio.run_coroutine_threadsafe(manager.broadcast(_to_payload(notificacao)), loop)
 
                 last_seen_id = registro.ID_AUD
 
         except Exception as e:
-            # Mostra apenas erros importantes no console
-            print(f"[ERRO] Falha ao checar alterações: {e}")
+            print(f"[ERRO] Falha ao processar notificações: {e}")
 
         finally:
             db.close()
 
         time.sleep(interval_seconds)
-
 
 if __name__ == "__main__":
     notification_loop()

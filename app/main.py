@@ -1,8 +1,8 @@
 from fastapi import FastAPI, WebSocket
-from app.routers import auditoria, fv, sql, report, dependencias, dashboard, docs
+from app.routers import auditoria, fv, sql, report, dependencias, dashboard, docs, usuarios, notificacoes
 from app.services.websocket_manager import manager
 from app.services.notification_service import notification_loop
-from app.services.monitor_espelhos import monitor_espelhos  # <<< importe aqui
+from app.services.monitor_espelhos import monitor_espelhos  
 import threading
 
 app = FastAPI(
@@ -19,6 +19,8 @@ app.include_router(dependencias.router) # /dependencias
 app.include_router(dashboard.router)    # /dashboard
 app.include_router(auditoria.router)    # /auditoria
 app.include_router(docs.router)         # /docs
+app.include_router(usuarios.router) 
+app.include_router(notificacoes.router)
 
 @app.get("/")
 def root():

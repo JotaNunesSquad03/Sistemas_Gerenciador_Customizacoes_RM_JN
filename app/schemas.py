@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
 
@@ -128,6 +128,40 @@ class DocRead(DocBase):
     ID_DOC: int
     DATA_CRIACAO: datetime
     DATA_ATUALIZACAO: datetime
+
+    class Config:
+        orm_mode = True
+
+# -----------------------------
+# Schemas para AUD_USUARIO
+# -----------------------------
+
+class UsuarioCreate(BaseModel):
+    nome: str
+    email: EmailStr
+    senha: str
+    funcao: str
+
+class UsuarioOut(BaseModel):
+    id: int
+    nome: str
+    email: EmailStr
+    funcao: str
+
+    class Config:
+        orm_mode = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class NotificacaoOut(BaseModel):
+    id: int
+    id_alteracao: int
+    usuario: str
+    mensagem: str
+    data_hora: datetime
+    lida: bool
 
     class Config:
         orm_mode = True

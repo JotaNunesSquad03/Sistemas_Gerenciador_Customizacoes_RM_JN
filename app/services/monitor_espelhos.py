@@ -1,13 +1,10 @@
-# app/services/monitor_espelhos.py
-
 import time
 import json
 import re
 import hashlib
 from app.database import SessionLocal
 from app.models import AUD_ALTERACAO, AUD_FV, AUD_SQL, AUD_REPORT
-from app.services.audit import log_aud_alteracao
-from app.notificacao import notificar_console  # ✅ apenas console
+from app.services.audit import log_aud_alteracao  
 
 # ---------------------------
 # Helpers
