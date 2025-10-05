@@ -1,10 +1,9 @@
 from sqlalchemy.orm import Session
 from datetime import datetime
-from app import models
 import json
 import asyncio
-from app.services.websocket_manager import manager, loop  # importa o loop global
-
+from app import models
+from app.services.websocket_manager import manager, loop  # loop global
 
 def log_aud_alteracao(
     db: Session,
@@ -17,7 +16,7 @@ def log_aud_alteracao(
     descricao=None
 ):
     """
-    Registra uma alteração na tabela AUD_ALTERACAO
+    Registra uma alteração na tabela AUD_SQL
     e dispara notificação em tempo real via WebSocket.
     """
 
@@ -27,15 +26,15 @@ def log_aud_alteracao(
     if isinstance(valor_novo, dict):
         valor_novo = {k: v for k, v in valor_novo.items() if not k.startswith('_')}
 
-    registro = models.AUD_ALTERACAO(
-        TABELA=tabela,
-        CHAVE=chave,
-        ACAO=acao,
-        USUARIO=usuario or "SYSTEM",
-        DATA_HORA=datetime.utcnow(),
-        DESCRICAO=descricao,
-        VALOR_ANTERIOR=json.dumps(valor_anterior, default=str) if valor_anterior is not None else None,
-        VALOR_NOVO=json.dumps(valor_novo, default=str) if valor_novo is not None else None,
+    registro = models.AUD_SQL(
+        CODCOLIGADA=None,  # ou preencha se tiver valor
+        APLICACAO=tabela,
+        CODSENTENCA=chave,
+        TITULO=None,
+        SENTENCA=None,
+        TAMANHO=None,
+        RECCREATEDBY=usuario or "SYSTEM",
+        RECCREATEDON=datetime.utcnow()
     )
 
     try:
@@ -44,16 +43,15 @@ def log_aud_alteracao(
         db.refresh(registro)
 
         msg = {
-            "id": registro.ID_AUD,
-            "tabela": registro.TABELA,
-            "acao": registro.ACAO,
-            "usuario": registro.USUARIO,
-            "data_hora": str(registro.DATA_HORA),
-            "descricao": registro.DESCRICAO
+            "id": registro.ID,
+            "tabela": registro.APLICACAO,
+            "acao": acao,
+            "usuario": registro.RECCREATEDBY,
+            "data_hora": str(registro.RECCREATEDON),
+            "descricao": descricao
         }
 
         try:
-            # dispara no loop global do servidor
             asyncio.run_coroutine_threadsafe(manager.broadcast(json.dumps(msg)), loop)
         except Exception as e:
             print(f"⚠️ Erro ao enviar notificação WebSocket: {e}")
@@ -64,3 +62,4 @@ def log_aud_alteracao(
         db.rollback()
         print(f"❌ Erro ao registrar auditoria: {e}")
         return None
+

@@ -1,11 +1,11 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, PrimaryKeyConstraint
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, PrimaryKeyConstraint, ForeignKey
 from datetime import datetime
 from app.database import Base
 
 class AUD_FV(Base):
     __tablename__ = "AUD_FV"
-    CODCOLIGADA = Column(Integer, nullable=False)
-    ID = Column(Integer, nullable=False)
+    CODCOLIGADA = Column(Integer, nullable=True)
+    ID = Column(Integer, primary_key=True, autoincrement=True) 
     NOME = Column(String(255), nullable=True)
     DESCRICAO = Column(Text, nullable=True)
     IDCATEGORIA = Column(Integer, nullable=True)
@@ -16,15 +16,15 @@ class AUD_FV(Base):
     RECMODIFIEDON = Column(DateTime, nullable=True)
 
     __table_args__ = (
-        PrimaryKeyConstraint('CODCOLIGADA', 'ID'),
+        PrimaryKeyConstraint('ID'),
     )
 
 class AUD_SQL(Base):
     __tablename__ = "AUD_SQL"
 
-    CODCOLIGADA = Column(Integer, nullable=False)
-    APLICACAO = Column(String(100), nullable=False)
-    CODSENTENCA = Column(String(100), nullable=False)
+    CODCOLIGADA = Column(Integer, nullable=True)
+    APLICACAO = Column(String(100), nullable=True)
+    CODSENTENCA = Column(String(100), nullable=True)
     TITULO = Column(String(255), nullable=True)
     SENTENCA = Column(Text, nullable=True)
     TAMANHO = Column(Integer, nullable=True)
@@ -32,90 +32,50 @@ class AUD_SQL(Base):
     RECCREATEDON = Column(DateTime, nullable=True)
     RECMODIFIEDBY = Column(String(100), nullable=True)
     RECMODIFIEDON = Column(DateTime, nullable=True)
+    ID = Column(Integer, primary_key=True, autoincrement=True) 
 
     __table_args__ = (
-        PrimaryKeyConstraint("CODCOLIGADA", "APLICACAO", "CODSENTENCA"),
+        PrimaryKeyConstraint("ID"),
     )
 
 class AUD_REPORT(Base):
     __tablename__ = "AUD_REPORT"
 
-    CODCOLIGADA = Column(Integer, nullable=False)
-    ID = Column(Integer, nullable=False)
-    CODAPLICACAO = Column(String(100), nullable=False)
+    CODCOLIGADA = Column(Integer, nullable=True)
+    ID = Column(Integer, primary_key=True, autoincrement=True) 
+    CODAPLICACAO = Column(String(100), nullable=True)
     CODIGO = Column(String(100), nullable=True)
     DESCRICAO = Column(String(255), nullable=True)
     RECCREATEDBY = Column(String(100), nullable=True)
     RECCREATEDON = Column(DateTime, nullable=True)
     USRULTALTERACAO = Column(String(100), nullable=True)
     DATAULTALTERACAO = Column(DateTime, nullable=True)
+    LIDA = Column(Boolean, default=False, nullable=True)
 
     __table_args__ = (
-        PrimaryKeyConstraint("CODCOLIGADA", "ID"),
+        PrimaryKeyConstraint("ID"),
     )
 
-class AUD_DEPENDENCIAS(Base):
-    __tablename__ = "AUD_DEPENDENCIAS"
+class DEPENDENCIA(Base):
+    __tablename__ = "DEPENDENCIA"
 
-    ID = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    CODCOLIGADA = Column(Integer, nullable=False)
-    TIPO_ORIGEM = Column(String(50), nullable=False)
-    ID_ORIGEM = Column(String(100), nullable=False)
-    TIPO_DESTINO = Column(String(50), nullable=False)
-    ID_DESTINO = Column(String(100), nullable=False)
-    RECCREATEDON = Column(DateTime, nullable=True)
-
-class AUD_ALTERACAO(Base):
-    __tablename__ = "AUD_ALTERACAO"
-
-    ID_AUD = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    TABELA = Column(String(50), nullable=False)
-    CHAVE = Column(String(200), nullable=False)
-    ACAO = Column(String(20), nullable=False)
-    USUARIO = Column(String(100), nullable=False)
-    DATA_HORA = Column(DateTime, default=datetime.utcnow, nullable=False)
-    DESCRICAO = Column(String(500), nullable=True)
-    VALOR_ANTERIOR = Column(Text, nullable=True)
-    VALOR_NOVO = Column(Text, nullable=True)
-
-
-class AUD_DOCS(Base):
-    __tablename__ = "AUD_DOCS"
-
-    ID_DOC = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    CHAVE = Column(String(150), nullable=False, index=True)  # ex.: "SQL|0|CODEF001.0005"
-    TITULO = Column(String(200), nullable=False)             # ex.: "Especificação da Consulta CODEF001.0005"
-    AUTOR = Column(String(100), nullable=False)              # usuário que documentou
-    CONTEUDO = Column(Text, nullable=False)                  # Markdown
-    TAGS = Column(String(300), nullable=True)                # ex.: "fiscal, compras"
-    DATA_CRIACAO = Column(DateTime, default=datetime.utcnow, nullable=False)
-    DATA_ATUALIZACAO = Column(DateTime, default=datetime.utcnow, nullable=False)
+    ID_SQL = Column(Integer, ForeignKey("AUD_SQL.ID"), nullable=False)
+    ID_FV = Column(Integer, ForeignKey("AUD_FV.ID"), nullable=False)
+    ID_REPORT = Column(Integer, ForeignKey("AUD_REPORT.ID"), nullable=False)
+    DESCRICAO = Column(Text, nullable=True)
 
     __table_args__ = (
-        {'schema': 'dbo'} 
+        PrimaryKeyConstraint("ID_SQL", "ID_FV", "ID_REPORT"),
     )
 
 class Usuario(Base):
     __tablename__ = "USUARIOS"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    nome = Column(String(100), nullable=False)
-    email = Column(String(100), unique=True, nullable=False)
-    senha_hash = Column(String(255), nullable=False)
-    funcao = Column(String(50), nullable=False)  # <-- aqui
-    data_criacao = Column(DateTime, default=datetime.utcnow, nullable=False)
-
-
-class Notificacao(Base):
-    __tablename__ = "NOTIFICACOES"
-
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    id_usuario = Column(Integer, nullable=False)          
-    id_alteracao = Column(Integer, nullable=True)         
-    tabela = Column(String(50), nullable=False)          
-    chave = Column(String(200), nullable=True)           
-    acao = Column(String(20), nullable=False)            
-    mensagem = Column(String(500), nullable=True)        
-    data_hora = Column(DateTime, default=datetime.utcnow, nullable=False)
-    lida = Column(Boolean, default=False)             
+    ID = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    NOME = Column(String(100), nullable=False)
+    EMAIL = Column(String(100), unique=True, nullable=False)
+    SENHA_HASH = Column(String(255), nullable=False)
+    FUNCAO = Column(String(50), nullable=False)  
+    DATA_CRIACAO = Column(DateTime, default=datetime.utcnow, nullable=False)
+         
 

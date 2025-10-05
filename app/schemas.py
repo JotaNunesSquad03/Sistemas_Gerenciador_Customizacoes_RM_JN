@@ -57,6 +57,7 @@ class ReportRead(ReportBase):
     RECCREATEDON: Optional[datetime]
     USRULTALTERACAO: Optional[str]
     DATAULTALTERACAO: Optional[datetime]
+    LIDA: Optional[bool] = False
 
     class Config:
         orm_mode = True
@@ -65,70 +66,18 @@ class ReportRead(ReportBase):
 # Schemas para AUD_DEPENDENCIAS
 # -----------------------------
 class DependenciaBase(BaseModel):
-    CODCOLIGADA: int
-    TIPO_ORIGEM: str
-    ID_ORIGEM: str
-    TIPO_DESTINO: str
-    ID_DESTINO: str
+    ID_SQL: int
+    ID_FV: int
+    ID_REPORT: int
+    DESCRICAO: Optional[str] = None
 
 class DependenciaCreate(DependenciaBase):
-    RECCREATEDON: Optional[datetime] = None
+    pass  # nada extra por enquanto
 
 class DependenciaUpdate(BaseModel):
-    TIPO_ORIGEM: Optional[str] = None
-    ID_ORIGEM: Optional[str] = None
-    TIPO_DESTINO: Optional[str] = None
-    ID_DESTINO: Optional[str] = None
+    DESCRICAO: Optional[str] = None
 
 class DependenciaRead(DependenciaBase):
-    ID: int
-    RECCREATEDON: Optional[datetime]
-
-    class Config:
-        orm_mode = True
-
-
-# -----------------------------
-# Schema para AUD_ALTERACAO (leitura)
-# -----------------------------
-
-class AudAlteracaoRead(BaseModel):
-    ID_AUD: int
-    TABELA: str
-    CHAVE: str
-    ACAO: str
-    USUARIO: str
-    DATA_HORA: datetime
-    DESCRICAO: Optional[str] = None
-    VALOR_ANTERIOR: Optional[str] = None
-    VALOR_NOVO: Optional[str] = None
-
-    class Config:
-        from_attributes = True
-
-# -----------------------------
-# Schemas para AUD_DOCS
-# -----------------------------
-class DocBase(BaseModel):
-    CHAVE: str
-    TITULO: str
-    AUTOR: str
-    CONTEUDO: str  # Markdown
-    TAGS: Optional[str] = None
-
-class DocCreate(DocBase):
-    pass
-
-class DocUpdate(BaseModel):
-    TITULO: Optional[str] = None
-    CONTEUDO: Optional[str] = None
-    TAGS: Optional[str] = None
-
-class DocRead(DocBase):
-    ID_DOC: int
-    DATA_CRIACAO: datetime
-    DATA_ATUALIZACAO: datetime
-
     class Config:
         orm_mode = True
 
@@ -151,17 +100,13 @@ class UsuarioOut(BaseModel):
     class Config:
         orm_mode = True
 
+# -----------------------------
+# Schemas para Autenticação 
+# -----------------------------
+
 class Token(BaseModel):
     access_token: str
     token_type: str
-
-class NotificacaoOut(BaseModel):
-    id: int
-    id_alteracao: int
-    usuario: str
-    mensagem: str
-    data_hora: datetime
-    lida: bool
 
     class Config:
         orm_mode = True

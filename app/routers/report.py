@@ -25,9 +25,9 @@ def list_report(
     return query.offset(skip).limit(limit).all()
 
 # GET BY ID
-@router.get("/{codcoligada}/{id}", response_model=schemas.ReportRead)
-def get_report(codcoligada: int, id: int, db: Session = Depends(get_db)):
-    report = db.query(models.AUD_REPORT).filter_by(CODCOLIGADA=codcoligada, ID=id).first()
+@router.get("/{id}", response_model=schemas.ReportRead)
+def get_report(id: int, db: Session = Depends(get_db)):
+    report = db.query(models.AUD_REPORT).filter(models.AUD_REPORT.ID == id).first()
     if not report:
         raise HTTPException(status_code=404, detail="Report não encontrado")
     return report

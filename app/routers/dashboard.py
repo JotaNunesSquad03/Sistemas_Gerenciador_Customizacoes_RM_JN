@@ -14,7 +14,7 @@ def dashboard(db: Session = Depends(get_db)):
     total_fv = db.query(func.count()).select_from(models.AUD_FV).scalar()
     total_sql = db.query(func.count()).select_from(models.AUD_SQL).scalar()
     total_report = db.query(func.count()).select_from(models.AUD_REPORT).scalar()
-    total_dep = db.query(func.count()).select_from(models.AUD_DEPENDENCIAS).scalar()
+    total_dep = db.query(func.count()).select_from(models.DEPENDENCIA).scalar()
 
     # Últimos 30 dias
     cutoff = datetime.utcnow() - timedelta(days=30)

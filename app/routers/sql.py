@@ -28,13 +28,9 @@ def list_sql(
     return query.offset(skip).limit(limit).all()
 
 # GET BY ID
-@router.get("/{codcoligada}/{aplicacao}/{codsentenca}", response_model=schemas.SQLRead)
-def get_sql(codcoligada: int, aplicacao: str, codsentenca: str, db: Session = Depends(get_db)):
-    sql = db.query(models.AUD_SQL).filter_by(
-        CODCOLIGADA=codcoligada,
-        APLICACAO=aplicacao,
-        CODSENTENCA=codsentenca
-    ).first()
+@router.get("/{id}", response_model=schemas.SQLRead)
+def get_sql(id: int, db: Session = Depends(get_db)):
+    sql = db.query(models.AUD_SQL).filter(models.AUD_SQL.ID == id).first()
     if not sql:
         raise HTTPException(status_code=404, detail="SQL não encontrada")
     return sql

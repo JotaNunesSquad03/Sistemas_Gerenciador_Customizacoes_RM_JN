@@ -16,13 +16,13 @@ def list_fv(
     db: Session = Depends(get_db)
 ):
     query = db.query(models.AUD_FV).filter(models.AUD_FV.CODCOLIGADA == codcoligada)
-    query = query.order_by(asc(models.AUD_FV.CODCOLIGADA), asc(models.AUD_FV.ID))
+    query = query.order_by(asc(models.AUD_FV.ID))
     return query.offset(skip).limit(limit).all()
 
 # GET BY ID
-@router.get("/{codcoligada}/{id}", response_model=schemas.FVRead)
-def get_fv(codcoligada: int, id: int, db: Session = Depends(get_db)):
-    fv = db.query(models.AUD_FV).filter_by(CODCOLIGADA=codcoligada, ID=id).first()
+@router.get("/{id}", response_model=schemas.FVRead)
+def get_fv(id: int, db: Session = Depends(get_db)):
+    fv = db.query(models.AUD_FV).filter(models.AUD_FV.ID == id).first()
     if not fv:
         raise HTTPException(status_code=404, detail="FV não encontrada")
     return fv
