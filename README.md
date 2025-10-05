@@ -37,6 +37,15 @@ Criar um sistema robusto para gerenciar e auditar customizações no **ERP RM TO
 - Cada alteração registrada em AUD_ALTERACAO gera uma notificação via WebSocket.  
 - **Status:** Implementado.
 
+## 6. Notificações e Alertas (NOTIFICACOES) ✅
+- Armazena notificações geradas para os usuários sobre alterações nas customizações.
+- Integração com WebSocket para envio de alertas em tempo real ao frontend.
+- **Status:** Implementado.
+
+## 7. Gestão de Usuários (USUARIOS) ✅
+- Gerencia os usuários do sistema, incluindo autenticação e associação de notificações.
+- **Status:** Implementado.
+
 ---
 
 ## Tecnologias Utilizadas (Backend)
