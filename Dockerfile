@@ -1,12 +1,9 @@
-FROM python:3.13-slim
+# Imagem oficial da Microsoft com o driver ODBC 17 já instalado
+FROM mcr.microsoft.com/mssql-tools:latest
 
-# Instala dependências do sistema e o driver ODBC do SQL Server
+# Instala Python e dependências necessárias
 RUN apt-get update && \
-    apt-get install -y curl gnupg apt-transport-https unixodbc-dev && \
-    curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
-    curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
-    apt-get update && \
-    ACCEPT_EULA=Y apt-get install -y msodbcsql17 && \
+    apt-get install -y python3 python3-pip unixodbc-dev && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Cria diretório da aplicação
