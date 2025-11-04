@@ -3,6 +3,7 @@ from app.routers import auditoria, fv, sql, report, dependencias, dashboard, usu
 from app.services.websocket_manager import manager
 from app.services.notification_service import notification_loop
 from app.services.monitor_espelhos import monitor_espelhos  
+from fastapi.middleware.cors import CORSMiddleware
 import threading
 
 app = FastAPI(
@@ -35,6 +36,13 @@ def root():
             "ws_notificacoes": "/ws/notificacoes - WebSocket para notificações em tempo real"
         }
     }
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/health")
 def health_check():
