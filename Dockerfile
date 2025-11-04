@@ -13,7 +13,7 @@ WORKDIR /app
 COPY . /app
 
 # Instala dependências Python
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN python -m pip install --upgrade pip && python -m pip install -r requirements.txt
 
 # Expõe a porta do FastAPI
 EXPOSE 10000
