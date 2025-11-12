@@ -21,10 +21,11 @@ class AUD_FV(Base):
 
 class AUD_SQL(Base):
     __tablename__ = "AUD_SQL"
+    
+    CODSENTENCA = Column(String(100), primary_key=True)  # vira o ID
 
     CODCOLIGADA = Column(Integer, nullable=True)
     APLICACAO = Column(String(100), nullable=True)
-    CODSENTENCA = Column(String(100), nullable=True)
     TITULO = Column(String(255), nullable=True)
     SENTENCA = Column(Text, nullable=True)
     TAMANHO = Column(Integer, nullable=True)
@@ -32,11 +33,6 @@ class AUD_SQL(Base):
     RECCREATEDON = Column(DateTime, nullable=True)
     RECMODIFIEDBY = Column(String(100), nullable=True)
     RECMODIFIEDON = Column(DateTime, nullable=True)
-    ID = Column(Integer, primary_key=True, autoincrement=True) 
-
-    __table_args__ = (
-        PrimaryKeyConstraint("ID"),
-    )
 
 class AUD_REPORT(Base):
     __tablename__ = "AUD_REPORT"
@@ -55,27 +51,3 @@ class AUD_REPORT(Base):
     __table_args__ = (
         PrimaryKeyConstraint("ID"),
     )
-
-class DEPENDENCIA(Base):
-    __tablename__ = "DEPENDENCIA"
-
-    ID_SQL = Column(Integer, ForeignKey("AUD_SQL.ID"), nullable=False)
-    ID_FV = Column(Integer, ForeignKey("AUD_FV.ID"), nullable=False)
-    ID_REPORT = Column(Integer, ForeignKey("AUD_REPORT.ID"), nullable=False)
-    DESCRICAO = Column(Text, nullable=True)
-
-    __table_args__ = (
-        PrimaryKeyConstraint("ID_SQL", "ID_FV", "ID_REPORT"),
-    )
-
-class Usuario(Base):
-    __tablename__ = "USUARIOS"
-
-    ID = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    NOME = Column(String(100), nullable=False)
-    EMAIL = Column(String(100), unique=True, nullable=False)
-    SENHA_HASH = Column(String(255), nullable=False)
-    FUNCAO = Column(String(50), nullable=False)  
-    DATA_CRIACAO = Column(DateTime, default=datetime.utcnow, nullable=False)
-         
-
