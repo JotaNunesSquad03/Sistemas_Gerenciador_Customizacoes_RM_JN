@@ -34,18 +34,77 @@ def list_alteracoes(
         q = q.filter(models.AUD_SQL.RECCREATEDON <= data_fim)
     return q.order_by(desc(models.AUD_SQL.RECCREATEDON)).offset(skip).limit(limit).all()
 
-# Últimos 5 registros
-@router.get("/ultimos5", response_model=List[schemas.SQLRead])
-def get_ultimos_cinco(db: Session = Depends(get_db)):
-    registros = (
-        db.query(models.AUD_SQL)
-        .order_by(desc(models.AUD_SQL.RECCREATEDON))
+
+@router.get("/ultimos")
+def ultimos_registros(db: Session = Depends(get_db)):
+    """
+    Retorna os 5 últimos registros criados ou alterados
+    nas tabelas AUD_SQL, AUD_FV e AUD_REPORT.
+    """
+
+    def formatar_registro(origem, descricao, usuario, data):
+        return {
+            "origem": origem,
+            "descricao": descricao,
+            "usuario": usuario,
+            "data": data,
+        }
+
+    registros = []
+
+    # AUD_SQL
+    for r in (
+        db.query(
+            models.AUD_SQL.TITULO.label("descricao"),
+            models.AUD_SQL.RECMODIFIEDBY,
+            models.AUD_SQL.RECMODIFIEDON,
+            models.AUD_SQL.RECCREATEDBY,
+            models.AUD_SQL.RECCREATEDON,
+        )
+        .order_by(models.AUD_SQL.RECMODIFIEDON.desc(), models.AUD_SQL.RECCREATEDON.desc())
         .limit(5)
         .all()
-    )
+    ):
+        data = r.RECMODIFIEDON or r.RECCREATEDON
+        usuario = r.RECMODIFIEDBY or r.RECCREATEDBY
+        registros.append(formatar_registro("AUD_SQL", r.descricao, usuario, data))
 
-    if not registros:
-        raise HTTPException(status_code=404, detail="Nenhum registro encontrado")
+    # AUD_FV
+    for r in (
+        db.query(
+            models.AUD_FV.NOME.label("descricao"),
+            models.AUD_FV.RECMODIFIEDBY,
+            models.AUD_FV.RECMODIFIEDON,
+            models.AUD_FV.RECCREATEDBY,
+            models.AUD_FV.RECCREATEDON,
+        )
+        .order_by(models.AUD_FV.RECMODIFIEDON.desc(), models.AUD_FV.RECCREATEDON.desc())
+        .limit(5)
+        .all()
+    ):
+        data = r.RECMODIFIEDON or r.RECCREATEDON
+        usuario = r.RECMODIFIEDBY or r.RECCREATEDBY
+        registros.append(formatar_registro("AUD_FV", r.descricao, usuario, data))
+
+    # AUD_REPORT
+    for r in (
+        db.query(
+            models.AUD_REPORT.DESCRICAO.label("descricao"),
+            models.AUD_REPORT.USRULTALTERACAO.label("modificado_por"),
+            models.AUD_REPORT.DATAULTALTERACAO.label("modificado_em"),
+            models.AUD_REPORT.RECCREATEDBY,
+            models.AUD_REPORT.RECCREATEDON,
+        )
+        .order_by(models.AUD_REPORT.DATAULTALTERACAO.desc(), models.AUD_REPORT.RECCREATEDON.desc())
+        .limit(5)
+        .all()
+    ):
+        data = r.modificado_em or r.RECCREATEDON
+        usuario = r.modificado_por or r.RECCREATEDBY
+        registros.append(formatar_registro("AUD_REPORT", r.descricao, usuario, data))
+
+    # Junta tudo e pega os 5 mais recentes
+    registros = sorted(registros, key=lambda x: x["data"] or datetime.min, reverse=True)[:5]
 
     return registros
 
