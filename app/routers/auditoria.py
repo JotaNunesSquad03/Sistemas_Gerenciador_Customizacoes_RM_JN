@@ -5,10 +5,11 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 from app import models, schemas
 from app.database import get_db
-from app.services.audit import log_aud_alteracao  # Preservamos a função de log
+from app.services.audit import log_aud_alteracao  # Função de log de auditoria
 
 router = APIRouter(prefix="/aud", tags=["Auditoria"])
 
+# 📋 Listagem geral de alterações
 @router.get("", response_model=List[schemas.SQLRead])
 def list_alteracoes(
     tabela: Optional[str] = Query(None),
@@ -22,42 +23,65 @@ def list_alteracoes(
 ):
     q = db.query(models.AUD_SQL)
     if tabela:
-        q = q.filter(models.AUD_SQL.TABELA == tabela)
+        q = q.filter(models.AUD_SQL.APLICACAO == tabela)
     if usuario:
-        q = q.filter(models.AUD_SQL.USUARIO.ilike(f"%{usuario}%"))
+        q = q.filter(models.AUD_SQL.RECCREATEDBY.ilike(f"%{usuario}%"))
     if acao:
-        q = q.filter(models.AUD_SQL.ACAO == acao)
+        q = q.filter(models.AUD_SQL.CODSENTENCA == acao)
     if data_inicio:
-        q = q.filter(models.AUD_SQL.DATA_HORA >= data_inicio)
+        q = q.filter(models.AUD_SQL.RECCREATEDON >= data_inicio)
     if data_fim:
-        q = q.filter(models.AUD_SQL.DATA_HORA <= data_fim)
-    return q.order_by(desc(models.AUD_SQL.DATA_HORA)).offset(skip).limit(limit).all()
+        q = q.filter(models.AUD_SQL.RECCREATEDON <= data_fim)
+    return q.order_by(desc(models.AUD_SQL.RECCREATEDON)).offset(skip).limit(limit).all()
 
+# Últimos 5 registros
+@router.get("/ultimos5", response_model=List[schemas.SQLRead])
+def get_ultimos_cinco(db: Session = Depends(get_db)):
+    registros = (
+        db.query(models.AUD_SQL)
+        .order_by(desc(models.AUD_SQL.RECCREATEDON))
+        .limit(5)
+        .all()
+    )
+
+    if not registros:
+        raise HTTPException(status_code=404, detail="Nenhum registro encontrado")
+
+    return registros
+
+# Obter uma alteração específica
 @router.get("/{id_aud}", response_model=schemas.SQLRead)
 def get_alteracao(id_aud: int, db: Session = Depends(get_db)):
-    r = db.query(models.AUD_SQL).filter_by(ID_AUD=id_aud).first()
+    r = db.query(models.AUD_SQL).filter_by(ID=id_aud).first()
     if not r:
         raise HTTPException(status_code=404, detail="Alteração não encontrada")
     return r
 
+# Histórico de uma tabela/chave
 @router.get("/historico/{tabela}/{chave}", response_model=List[schemas.SQLRead])
 def historico_item(tabela: str, chave: str, db: Session = Depends(get_db)):
     return db.query(models.AUD_SQL).filter(
-        models.AUD_SQL.TABELA == tabela,
-        models.AUD_SQL.CHAVE == chave
-    ).order_by(desc(models.AUD_SQL.DATA_HORA)).all()
+        models.AUD_SQL.APLICACAO == tabela,
+        models.AUD_SQL.CODSENTENCA == chave
+    ).order_by(desc(models.AUD_SQL.RECCREATEDON)).all()
 
+
+# Estatísticas gerais (com últimos 30 dias)
 @router.get("/stats/resumo")
 def stats(db: Session = Depends(get_db)):
     cutoff = datetime.utcnow() - timedelta(days=30)
     total = db.query(func.count()).select_from(models.AUD_SQL).scalar()
+
     por_tabela = db.query(
-        models.AUD_SQL.TABELA, func.count()
-    ).group_by(models.AUD_SQL.TABELA).all()
+        models.AUD_SQL.APLICACAO, func.count()
+    ).group_by(models.AUD_SQL.APLICACAO).all()
+
     por_acao = db.query(
-        models.AUD_SQL.ACAO, func.count()
-    ).group_by(models.AUD_SQL.ACAO).all()
-    ult_30 = db.query(func.count()).filter(models.AUD_SQL.DATA_HORA >= cutoff).scalar()
+        models.AUD_SQL.CODSENTENCA, func.count()
+    ).group_by(models.AUD_SQL.CODSENTENCA).all()
+
+    ult_30 = db.query(func.count()).filter(models.AUD_SQL.RECCREATEDON >= cutoff).scalar()
+
     return {
         "total": total,
         "por_tabela": [{"tabela": t, "total": n} for t, n in por_tabela],
@@ -65,11 +89,13 @@ def stats(db: Session = Depends(get_db)):
         "ultimos_30_dias": ult_30
     }
 
+
+# Endpoint de teste
 @router.post("/teste")
 def teste_auditoria(db: Session = Depends(get_db)):
     """
-    Endpoint de teste: força a criação de uma auditoria fake
-    e dispara notificação em tempo real pelo WebSocket.
+    Cria um registro fake na tabela AUD_SQL
+    e envia via WebSocket para testar integração.
     """
     registro = log_aud_alteracao(
         db=db,
@@ -85,4 +111,4 @@ def teste_auditoria(db: Session = Depends(get_db)):
     if not registro:
         raise HTTPException(status_code=500, detail="Erro ao registrar alteração")
 
-    return {"msg": "Alteração de teste registrada", "id": registro.ID_AUD}
+    return {"msg": "Alteração de teste registrada", "id": registro.ID}
