@@ -42,9 +42,10 @@ def ultimos_registros(db: Session = Depends(get_db)):
     nas tabelas AUD_SQL, AUD_FV e AUD_REPORT.
     """
 
-    def formatar_registro(origem, descricao, usuario, data):
+    def formatar_registro(origem,id_registro, descricao, usuario, data):
         return {
             "origem": origem,
+            "id": id_registro,
             "descricao": descricao,
             "usuario": usuario,
             "data": data,
@@ -55,6 +56,7 @@ def ultimos_registros(db: Session = Depends(get_db)):
     # AUD_SQL
     for r in (
         db.query(
+            models.AUD_SQL.CODSENTENCA.label("id"),
             models.AUD_SQL.TITULO.label("descricao"),
             models.AUD_SQL.RECMODIFIEDBY,
             models.AUD_SQL.RECMODIFIEDON,
@@ -67,11 +69,12 @@ def ultimos_registros(db: Session = Depends(get_db)):
     ):
         data = r.RECMODIFIEDON or r.RECCREATEDON
         usuario = r.RECMODIFIEDBY or r.RECCREATEDBY
-        registros.append(formatar_registro("AUD_SQL", r.descricao, usuario, data))
+        registros.append(formatar_registro("AUD_SQL", r.id, r.descricao, usuario, data))
 
     # AUD_FV
     for r in (
         db.query(
+            models.AUD_FV.ID.label("id"),
             models.AUD_FV.NOME.label("descricao"),
             models.AUD_FV.RECMODIFIEDBY,
             models.AUD_FV.RECMODIFIEDON,
@@ -84,11 +87,12 @@ def ultimos_registros(db: Session = Depends(get_db)):
     ):
         data = r.RECMODIFIEDON or r.RECCREATEDON
         usuario = r.RECMODIFIEDBY or r.RECCREATEDBY
-        registros.append(formatar_registro("AUD_FV", r.descricao, usuario, data))
+        registros.append(formatar_registro("AUD_FV", r.id, r.descricao, usuario, data))
 
     # AUD_REPORT
     for r in (
         db.query(
+            models.AUD_REPORT.ID.label("id"),
             models.AUD_REPORT.DESCRICAO.label("descricao"),
             models.AUD_REPORT.USRULTALTERACAO.label("modificado_por"),
             models.AUD_REPORT.DATAULTALTERACAO.label("modificado_em"),
@@ -101,7 +105,7 @@ def ultimos_registros(db: Session = Depends(get_db)):
     ):
         data = r.modificado_em or r.RECCREATEDON
         usuario = r.modificado_por or r.RECCREATEDBY
-        registros.append(formatar_registro("AUD_REPORT", r.descricao, usuario, data))
+        registros.append(formatar_registro("AUD_REPORT",r.id, r.descricao, usuario, data))
 
     # Junta tudo e pega os 5 mais recentes
     registros = sorted(registros, key=lambda x: x["data"] or datetime.min, reverse=True)[:5]
