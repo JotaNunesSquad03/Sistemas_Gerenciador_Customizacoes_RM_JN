@@ -10,30 +10,82 @@ from app.services.audit import log_aud_alteracao  # Função de log de auditoria
 router = APIRouter(prefix="/aud", tags=["Auditoria"])
 
 # 📋 Listagem geral de alterações
-@router.get("", response_model=List[schemas.SQLRead])
-def list_alteracoes(
-    tabela: Optional[str] = Query(None),
-    usuario: Optional[str] = Query(None),
-    acao: Optional[str] = Query(None),
-    data_inicio: Optional[datetime] = Query(None),
-    data_fim: Optional[datetime] = Query(None),
+@router.get("/historico")
+def historico_completo(
     skip: int = 0,
-    limit: int = 50,
+    limit: int = 1000,
     db: Session = Depends(get_db)
 ):
-    q = db.query(models.AUD_SQL)
-    if tabela:
-        q = q.filter(models.AUD_SQL.APLICACAO == tabela)
-    if usuario:
-        q = q.filter(models.AUD_SQL.RECCREATEDBY.ilike(f"%{usuario}%"))
-    if acao:
-        q = q.filter(models.AUD_SQL.CODSENTENCA == acao)
-    if data_inicio:
-        q = q.filter(models.AUD_SQL.RECCREATEDON >= data_inicio)
-    if data_fim:
-        q = q.filter(models.AUD_SQL.RECCREATEDON <= data_fim)
-    return q.order_by(desc(models.AUD_SQL.RECCREATEDON)).offset(skip).limit(limit).all()
+    registros = []
 
+    # AUD_SQL
+    sql = db.query(
+        models.AUD_SQL.CODSENTENCA.label("id"),
+        models.AUD_SQL.TITULO.label("descricao"),
+        models.AUD_SQL.RECMODIFIEDBY,
+        models.AUD_SQL.RECMODIFIEDON,
+        models.AUD_SQL.RECCREATEDBY,
+        models.AUD_SQL.RECCREATEDON
+    ).all()
+
+    for r in sql:
+        data = r.RECMODIFIEDON or r.RECCREATEDON
+        usuario = r.RECMODIFIEDBY or r.RECCREATEDBY
+        registros.append({
+            "origem": "AUD_SQL",
+            "id": r.id,
+            "descricao": r.descricao,
+            "usuario": usuario,
+            "data": data
+        })
+
+    # AUD_FV
+    fv = db.query(
+        models.AUD_FV.ID.label("id"),
+        models.AUD_FV.NOME.label("descricao"),
+        models.AUD_FV.RECMODIFIEDBY,
+        models.AUD_FV.RECMODIFIEDON,
+        models.AUD_FV.RECCREATEDBY,
+        models.AUD_FV.RECCREATEDON
+    ).all()
+
+    for r in fv:
+        data = r.RECMODIFIEDON or r.RECCREATEDON
+        usuario = r.RECMODIFIEDBY or r.RECCREATEDBY
+        registros.append({
+            "origem": "AUD_FV",
+            "id": r.id,
+            "descricao": r.descricao,
+            "usuario": usuario,
+            "data": data
+        })
+
+    # AUD_REPORT
+    report = db.query(
+        models.AUD_REPORT.ID.label("id"),
+        models.AUD_REPORT.DESCRICAO.label("descricao"),
+        models.AUD_REPORT.USRULTALTERACAO.label("modificado_por"),
+        models.AUD_REPORT.DATAULTALTERACAO.label("modificado_em"),
+        models.AUD_REPORT.RECCREATEDBY,
+        models.AUD_REPORT.RECCREATEDON,
+    ).all()
+
+    for r in report:
+        data = r.modificado_em or r.RECCREATEDON
+        usuario = r.modificado_por or r.RECCREATEDBY
+        registros.append({
+            "origem": "AUD_REPORT",
+            "id": r.id,
+            "descricao": r.descricao,
+            "usuario": usuario,
+            "data": data
+        })
+
+    # Ordena do mais novo pro mais antigo
+    registros = sorted(registros, key=lambda x: x["data"] or datetime.min, reverse=True)
+
+    # Paginação
+    return registros[skip: skip + limit]
 
 @router.get("/ultimos")
 def ultimos_registros(db: Session = Depends(get_db)):
