@@ -2,6 +2,8 @@ from fastapi import FastAPI, WebSocket
 from app.routers import auditoria, fv, sql, report, dashboard
 from fastapi.middleware.cors import CORSMiddleware
 import threading
+from app.routers import documentacao
+
 
 app = FastAPI(
     title="Sistema de Gerenciamento de Customizações ERP RM TOTVS",
@@ -15,6 +17,8 @@ app.include_router(sql.router)          # /sql
 app.include_router(report.router)       # /report
 app.include_router(dashboard.router)    # /dashboard
 app.include_router(auditoria.router)    # /auditoria
+app.include_router(documentacao.router) # /documentacao
+
 
 @app.get("/")
 def root():

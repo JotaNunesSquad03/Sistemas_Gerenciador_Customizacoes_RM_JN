@@ -110,3 +110,26 @@ class Token(BaseModel):
 
     class Config:
         orm_mode = True
+
+# -----------------------------
+# Schemas para Documentação 
+# -----------------------------
+
+class DocumentacaoBase(BaseModel):
+    TABELA: str
+    ID_REGISTRO: int
+    NOME_ARQUIVO: Optional[str] = None
+    CAMINHO_ARQUIVO: Optional[str] = None
+    STATUS: Optional[str] = None
+    OBSERVACAO: Optional[str] = None
+
+class DocumentacaoCreate(DocumentacaoBase):
+    RECCREATEDBY: Optional[str] = 'Sistema'
+
+class Documentacao(DocumentacaoBase):
+    ID: int
+    RECCREATEDON: datetime
+    RECMODIFIEDON: Optional[datetime]
+
+    class Config:
+        from_attributes = True

@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, PrimaryKeyConstraint, ForeignKey
 from datetime import datetime
 from app.database import Base
+from sqlalchemy.sql import func
 
 class AUD_FV(Base):
     __tablename__ = "AUD_FV"
@@ -51,3 +52,19 @@ class AUD_REPORT(Base):
     __table_args__ = (
         PrimaryKeyConstraint("ID"),
     )
+
+class AUD_DOCUMENTACAO(Base):
+    __tablename__ = "AUD_DOCUMENTACAO"
+
+    ID =Column(Integer, primary_key=True, index=True, autoincrement=True)
+    TABELA = Column(String(50), nullable=False)
+    ID_REGISTRO =Column(Integer, nullable=False)
+    NOME_ARQUIVO =Column(String(255), nullable=True)
+    CAMINHO_ARQUIVO =Column(String(500), nullable=True)
+    STATUS =Column(String(20), nullable=False, default="pendente")
+    OBSERVACAO =Column(String(1000), nullable=True)
+
+    RECCREATEDBY =Column(String(100), nullable=True)
+    RECCREATEDON =Column(DateTime, server_default=func.now())
+    RECMODIFIEDBY =Column(String(100), nullable=True)
+    RECMODIFIEDON =Column(DateTime, onupdate=func.now())
