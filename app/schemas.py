@@ -115,7 +115,7 @@ class Token(BaseModel):
 # Schemas para Documentação 
 # -----------------------------
 
-class DocumentacaoBase(BaseModel):
+"""ss DocumentacaoBase(BaseModel):
     TABELA: str
     ID_REGISTRO: int
     NOME_ARQUIVO: Optional[str] = None
@@ -130,6 +130,25 @@ class Documentacao(DocumentacaoBase):
     ID: int
     RECCREATEDON: datetime
     RECMODIFIEDON: Optional[datetime]
+
+    class Config:
+        from_attributes = True"""
+
+class DocCustomBase(BaseModel):
+    TABELA: str
+    ID_REGISTRO: str
+    DESCRICAO: Optional[str] = None
+    FUNCIONALIDADES: Optional[str] = None
+    CONFIGURACOES: Optional[str] = None
+    OBSERVACAO: Optional[str] = None
+
+class DocCustomCreate(DocCustomBase):
+    pass  # nada adicional por enquanto
+
+class DocCustom(DocCustomBase):
+    ID: int
+    RECCREATEDON: datetime
+    RECMODIFIEDON: Optional[datetime] = None
 
     class Config:
         from_attributes = True

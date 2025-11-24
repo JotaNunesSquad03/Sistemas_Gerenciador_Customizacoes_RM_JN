@@ -53,7 +53,7 @@ class AUD_REPORT(Base):
         PrimaryKeyConstraint("ID"),
     )
 
-class AUD_DOCUMENTACAO(Base):
+"""ass AUD_DOCUMENTACAO(Base):
     __tablename__ = "AUD_DOCUMENTACAO"
 
     ID =Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -67,4 +67,19 @@ class AUD_DOCUMENTACAO(Base):
     RECCREATEDBY =Column(String(100), nullable=True)
     RECCREATEDON =Column(DateTime, server_default=func.now())
     RECMODIFIEDBY =Column(String(100), nullable=True)
-    RECMODIFIEDON =Column(DateTime, onupdate=func.now())
+    RECMODIFIEDON =Column(DateTime, onupdate=func.now())"""
+
+class DOC_CUSTOM(Base):
+    __tablename__ = "DOC_CUSTOM"
+
+    ID = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    TABELA = Column(String(50), nullable=False)
+    ID_REGISTRO = Column(String(100), nullable=False)
+
+    DESCRICAO = Column(String(1000), nullable=True)
+    FUNCIONALIDADES = Column(String(2000), nullable=True)
+    CONFIGURACOES = Column(String(2000), nullable=True)
+    OBSERVACAO = Column(String(2000), nullable=True)
+
+    RECCREATEDON = Column(DateTime, server_default=func.now())
+    RECMODIFIEDON = Column(DateTime, onupdate=func.now())
