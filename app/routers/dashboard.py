@@ -28,9 +28,39 @@ def dashboard(db: Session = Depends(get_db)):
     alterados_report = db.query(func.count()).filter(models.AUD_REPORT.DATAULTALTERACAO != None, models.AUD_REPORT.DATAULTALTERACAO >= cutoff).scalar()
 
     # Documentação faltante
-    fv_sem_desc = db.query(func.count()).filter((models.AUD_FV.DESCRICAO == None) | (models.AUD_FV.DESCRICAO == "")).scalar()
-    sql_sem_titulo = db.query(func.count()).filter((models.AUD_SQL.TITULO == None) | (models.AUD_SQL.TITULO == "")).scalar()
-    report_sem_desc = db.query(func.count()).filter((models.AUD_REPORT.DESCRICAO == None) | (models.AUD_REPORT.DESCRICAO == "")).scalar()
+    fv_sem_doc = (
+        db.query(func.count(models.AUD_FV.ID))
+        .outerjoin(
+            models.DOC_CUSTOM,
+            (models.DOC_CUSTOM.ID_REGISTRO == models.AUD_FV.ID) &
+            (models.DOC_CUSTOM.TABELA == "AUD_FV")
+        )
+        .filter(models.DOC_CUSTOM.ID == None)
+        .scalar()
+    )
+
+    sql_sem_doc = (
+        db.query(func.count(models.AUD_SQL.CODSENTENCA))
+        .outerjoin(
+            models.DOC_CUSTOM,
+            (models.DOC_CUSTOM.ID_REGISTRO == models.AUD_SQL.CODSENTENCA) &
+            (models.DOC_CUSTOM.TABELA == "AUD_SQL")
+        )
+        .filter(models.DOC_CUSTOM.ID == None)
+        .scalar()
+    )
+
+    report_sem_doc = (
+        db.query(func.count(models.AUD_REPORT.ID))
+        .outerjoin(
+            models.DOC_CUSTOM,
+            (models.DOC_CUSTOM.ID_REGISTRO == models.AUD_REPORT.ID) &
+            (models.DOC_CUSTOM.TABELA == "AUD_REPORT")
+        )
+        .filter(models.DOC_CUSTOM.ID == None)
+        .scalar()
+    )
+
 
     return {
         "totais": {
@@ -52,8 +82,8 @@ def dashboard(db: Session = Depends(get_db)):
             },
         },
         "sem_documentacao": {
-            "fv": fv_sem_desc,
-            "sql": sql_sem_titulo,
-            "report": report_sem_desc
+            "fv": fv_sem_doc,
+            "sql": sql_sem_doc,
+            "report": report_sem_doc
         }
     }
