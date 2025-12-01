@@ -1,8 +1,7 @@
 Executando o Back-end (API) 
 
 Clonar o repositório: git clone 
-https://github.com/JotaNunesSquad03/Sistemas_Gerenciador_Customiz
- acoes_RM_JN.git cd Sistemas_Gerenciador_Customizacoes_RM_JN 
+https://github.com/JotaNunesSquad03/Sistemas_Gerenciador_Customizacoes_RM_JN.git cd Sistemas_Gerenciador_Customizacoes_RM_JN 
  
 Configurar o ambiente virtual e dependências:
 python -m venv venv 
