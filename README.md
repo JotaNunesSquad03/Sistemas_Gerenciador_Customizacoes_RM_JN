@@ -1,37 +1,19 @@
-# Gerenciamento de Customizações no ERP RM TOTVS
+Executando o Back-end (API) 
 
-## Status Atual
-Sistema para gerenciar e auditar customizações no ERP RM TOTVS, garantindo:  
+Clonar o repositório: git clone 
+https://github.com/JotaNunesSquad03/Sistemas_Gerenciador_Customiz
+ acoes_RM_JN.git cd Sistemas_Gerenciador_Customizacoes_RM_JN 
+ 
+Configurar o ambiente virtual e dependências:
+python -m venv venv 
 
-- Estabilidade do ambiente  
-- Otimização da manutenção  
-- Facilidade em atualizações  
-- Rastreabilidade técnica completa  
+Ativar ambiente virtual :
+○ Ativar (Windows): venv\Scripts\activate 
+○ Ativar (Linux/Mac): source venv/bin/activate 
 
-## Funcionalidades Principais
+○ Instalar dependências: 
+pip install -r requirements.txt
 
-### 1. Espelhamento de Customizações (`AUD_FV`, `AUD_SQL`, `AUD_REPORT`) ✅
-- Tabelas "espelho" das customizações no ERP  
-- Somente leitura, sem alterar o ERP  
-- Status: Implementado  
-
-### 2. Mapeamento de Dependências (`AUD_DEPENDENCIA`) ✅
-- Identifica relações entre customizações (ex.: FV que usa SQL)  
-- Preenche automaticamente a tabela de dependências sem duplicar dados e sem interferir no ERP  
-- Status: Implementado  
-
-### 3. Monitoramento e Logs Simplificados ✅
-- Auditoria simplificada diretamente nos espelhos (`AUD_SQL`, `AUD_FV`, `AUD_REPORT`)  
-- Detecta criação e atualização de registros  
-- Inclui campo `LIDA` apenas no `REPORT`, se necessário  
-- Status: Implementado  
-
-### 4. Gestão de Usuários (`USUÁRIOS`) ✅
-- Gerencia usuários do sistema, incluindo autenticação e associação de permissões  
-- Status: Implementado  
-
-## Tecnologias Utilizadas (Backend)
-- Python + FastAPI  
-- SQLAlchemy (ORM) + SQL Server  
-- WebSockets para monitoramento em tempo real  
-- Pydantic para validação de dados
+Executar a API: 
+uvicorn app.main:app --reload  (A API rodará em 
+http://127.0.0.1:8000) 
