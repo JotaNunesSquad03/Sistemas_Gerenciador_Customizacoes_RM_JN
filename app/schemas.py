@@ -63,21 +63,38 @@ class ReportRead(ReportBase):
         orm_mode = True
 
 # -----------------------------
-# Schemas para AUD_DEPENDENCIAS
+# Schemas para DEPENDENCIAS
 # -----------------------------
+
 class DependenciaBase(BaseModel):
-    ID_SQL: int
-    ID_FV: int
-    ID_REPORT: int
-    DESCRICAO: Optional[str] = None
+    descricao:str
+    nv_risco:int
 
 class DependenciaCreate(DependenciaBase):
-    pass  # nada extra por enquanto
+    pass
 
-class DependenciaUpdate(BaseModel):
-    DESCRICAO: Optional[str] = None
+class Dependencia(DependenciaBase):
+    id: int 
 
-class DependenciaRead(DependenciaBase):
+    class Config:
+        orm_mode = True
+
+# -----------------------------
+# Schemas para DEPENDENCIAS_REGISTRO
+# -----------------------------
+
+class DependenciaRegistroBase(BaseModel):
+    tabela_origem: str
+    id_origem: int
+    id_dependencia: int
+    is_principal: bool
+
+class DependenciaRegistroCreate(DependenciaRegistroBase):
+    pass
+
+class DependenciaRegistro(DependenciaRegistroBase):
+    id: int 
+
     class Config:
         orm_mode = True
 
@@ -115,25 +132,6 @@ class Token(BaseModel):
 # Schemas para Documentação 
 # -----------------------------
 
-"""ss DocumentacaoBase(BaseModel):
-    TABELA: str
-    ID_REGISTRO: int
-    NOME_ARQUIVO: Optional[str] = None
-    CAMINHO_ARQUIVO: Optional[str] = None
-    STATUS: Optional[str] = None
-    OBSERVACAO: Optional[str] = None
-
-class DocumentacaoCreate(DocumentacaoBase):
-    RECCREATEDBY: Optional[str] = 'Sistema'
-
-class Documentacao(DocumentacaoBase):
-    ID: int
-    RECCREATEDON: datetime
-    RECMODIFIEDON: Optional[datetime]
-
-    class Config:
-        from_attributes = True"""
-
 class DocCustomBase(BaseModel):
     TABELA: str
     ID_REGISTRO: str
@@ -143,7 +141,7 @@ class DocCustomBase(BaseModel):
     OBSERVACAO: Optional[str] = None
 
 class DocCustomCreate(DocCustomBase):
-    pass  # nada adicional por enquanto
+    pass  
 
 class DocCustom(DocCustomBase):
     ID: int

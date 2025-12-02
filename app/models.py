@@ -53,22 +53,6 @@ class AUD_REPORT(Base):
         PrimaryKeyConstraint("ID"),
     )
 
-"""ass AUD_DOCUMENTACAO(Base):
-    __tablename__ = "AUD_DOCUMENTACAO"
-
-    ID =Column(Integer, primary_key=True, index=True, autoincrement=True)
-    TABELA = Column(String(50), nullable=False)
-    ID_REGISTRO =Column(Integer, nullable=False)
-    NOME_ARQUIVO =Column(String(255), nullable=True)
-    CAMINHO_ARQUIVO =Column(String(500), nullable=True)
-    STATUS =Column(String(20), nullable=False, default="pendente")
-    OBSERVACAO =Column(String(1000), nullable=True)
-
-    RECCREATEDBY =Column(String(100), nullable=True)
-    RECCREATEDON =Column(DateTime, server_default=func.now())
-    RECMODIFIEDBY =Column(String(100), nullable=True)
-    RECMODIFIEDON =Column(DateTime, onupdate=func.now())"""
-
 class DOC_CUSTOM(Base):
     __tablename__ = "DOC_CUSTOM"
 
@@ -83,3 +67,26 @@ class DOC_CUSTOM(Base):
 
     RECCREATEDON = Column(DateTime, server_default=func.now())
     RECMODIFIEDON = Column(DateTime, onupdate=func.now())
+
+class Dependencias(Base):
+    __tablename__ = "DEPENDENCIAS"
+
+    id = Column(Integer, primary_key=True, index=True)
+    descricao = Column(String(255), nullable=False)
+    nv_risco = Column(Integer, ForeignKey("NV_RISCO.id"), nullable=False)
+
+class DependenciasRegistro(Base):
+    __tablename__ = "DEPENDENCIAS_REGISTRO"
+
+    id = Column(Integer, primary_key=True, index=True)
+    tabela_origem = Column(String(255), nullable=False)
+    id_origem = Column(Integer, nullable=False)
+    id_dependencia = Column(Integer, ForeignKey("DEPENDENCIAS.id"), nullable=False)
+    is_principal = Column(Boolean, default=False)
+
+class NvRisco(Base):
+    __tablename__ = "NV_RISCO"
+
+    id = Column(Integer, primary_key=True, index=True)
+    descricao = Column(String, nullable=False)
+

@@ -3,7 +3,7 @@ from datetime import datetime
 import json
 import asyncio
 from app import models
-from app.services.websocket_manager import manager, loop  # loop global
+
 
 def log_aud_alteracao(
     db: Session,
